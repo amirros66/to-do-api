@@ -4,20 +4,29 @@
 #for building a modern web API. 
 
 #Import necessary modules / classes from FastAPI
-from typing import List
+from typing import List, Annotated
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from fastapi.security import OAuth2PasswordBearer
 
 #Import modules from local 'app' package.
-from app import lists, models, database, schemas, tasks
+from app import lists, models, database, schemas, tasks, users
+
+from dotenv import load_dotenv
+
+load_dotenv()  # take environment variables from .env.
 
 # from app.database import SessionLocal, engine
 
 models.Base.metadata.create_all(bind=database.engine)
 
+
+
 #Create an instance of the FastAPI class, which represents the main application.
 app = FastAPI()
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 #Configure Cross-Origin Resource Sharing (CORS) middleware to allow requests from 
@@ -60,13 +69,29 @@ def get_db():
     #parts of your application.
     #Resource Cleanup: finally block ensures that the database session is properly closed, even if an error occurs.       
 
-#LISTS
-        
+
+#Users
+#Sign up users
+@app.post("/users", response_model=schemas.UserBase)
+def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    return users.create_user(db, user=user)
+
+#login users
+@app.post("/users/login", response_model=schemas.Token)
+def login_user(user: schemas.UserCredentials, db: Session = Depends(get_db)):
+    return users.login_user(db, user=user)
+
+#on the api, it asks for the access_key
+# only that server / api that gave that key should be able to see (this is the JWT token)
+
+
+
+#LISTS  
 #Get all lists
 #Define a GET endpoint (/lists) to retrieve a list of items from the database. It 
 #uses the get_lists function from the lists file.
 @app.get("/lists", response_model=List[schemas.List])
-def read_lists(skip: int = 0, limit: int = 20, db: Session = Depends(get_db)):
+def read_lists(token: Annotated[str, Depends(oauth2_scheme)], skip: int = 0, limit: int = 20, db: Session = Depends(get_db)):
     db = database.SessionLocal()
     results = lists.get_lists(db, skip=skip, limit=limit)
     if results is None:

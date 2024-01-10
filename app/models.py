@@ -2,6 +2,21 @@ from .database import Base
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
+#Allowing clients to authenticate with a username + password by storing 
+#credentials in our database.
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, autoincrement=True, index=True)
+    username = Column(String, nullable=False)
+    password = Column(String, nullable=False)
+
+    disabled = Column(Boolean, default=False)
+
+    #lists = relationship("List", back_populates="user")
+
+
+
 
 class List(Base):
     __tablename__ = "lists"
