@@ -2,9 +2,10 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+import os
 
 #2. Create PostgreSQL database and define a database url
-DATABASE_URL = "postgresql://vwzodcig:e3nLAoa-UjSGVayN__6gST6utZBCaQxS@tyke.db.elephantsql.com/vwzodcig"
+DATABASE_URL = os.environ["DATABASE_URL"]
 
 #3. Create SQLAlchemy engine (allows us to use the hosted database)
 engine = create_engine(DATABASE_URL)

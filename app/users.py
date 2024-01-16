@@ -3,7 +3,6 @@ from passlib.context import CryptContext
 from . import models, schemas
 from app import auth 
 from fastapi import HTTPException
-
  
 #Storing passwords securely - hash them using bcrypt
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -36,6 +35,6 @@ def login_user(db: Session, user: schemas.UserCredentials):
     if not verify_password(user.password, db_user.password):
         raise HTTPException(status_code=401, detail=user_password_error)
     return {
-        "access_token": auth.create_access_token(user.username), 
+        "access_token": auth.create_access_token(f"{db_user.id}:{db_user.username}"), 
         "token_type": "bearer"}
 

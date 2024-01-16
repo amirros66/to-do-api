@@ -12,11 +12,9 @@ class User(Base):
     password = Column(String, nullable=False)
 
     disabled = Column(Boolean, default=False)
-
-    #lists = relationship("List", back_populates="user")
-
-
-
+    
+    lists = relationship("List", back_populates="owner") 
+          
 
 class List(Base):
     __tablename__ = "lists"
@@ -24,7 +22,11 @@ class List(Base):
     id = Column(Integer, primary_key=True, autoincrement=True, index=True)
     name = Column(String, nullable=False)
 
+    owner_id = Column(Integer, ForeignKey("users.id"), default=1)
+
     tasks = relationship("Task", back_populates="list")
+    owner = relationship("User", back_populates="lists")
+
 
 
 class Task(Base):

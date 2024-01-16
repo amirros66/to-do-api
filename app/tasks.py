@@ -25,10 +25,12 @@ def get_task(db: Session, task_id: int):
     print(task)
     return task
 
-# delete list
+# delete task
 def delete_task(db: Session, list_id: int, task_id: int):
     task = db.query(models.Task).filter(models.List.id ==
                                         list_id, models.Task.id == task_id).first()
+    
     db.delete(task)
     db.commit()
     return task
+    

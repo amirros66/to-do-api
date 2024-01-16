@@ -6,10 +6,10 @@
 #Import necessary modules / classes from FastAPI
 from typing import List, Annotated
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordBearer
-
 #Import modules from local 'app' package.
 from app import lists, models, database, schemas, tasks, users
 
@@ -17,16 +17,17 @@ from dotenv import load_dotenv
 
 load_dotenv()  # take environment variables from .env.
 
-# from app.database import SessionLocal, engine
-
-models.Base.metadata.create_all(bind=database.engine)
-
-
 
 #Create an instance of the FastAPI class, which represents the main application.
 app = FastAPI()
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+reuseable_oauth = OAuth2PasswordBearer(
+    tokenUrl="/docslogin",  # only for usage in the docs!
+    scheme_name="JWT"
+)
+
 
 
 #Configure Cross-Origin Resource Sharing (CORS) middleware to allow requests from 
@@ -84,14 +85,22 @@ def login_user(user: schemas.UserCredentials, db: Session = Depends(get_db)):
 #on the api, it asks for the access_key
 # only that server / api that gave that key should be able to see (this is the JWT token)
 
-
+@app.post("/docslogin", response_model=schemas.Token) #?schemas.Token?
+def login_with_form_data(
+    user: OAuth2PasswordRequestForm = Depends(), #dependency injection - automatically provides required dependencies to function.
+    #declares a parameter 'user' of type OAuth2PasswordRequestForm.
+    #OAuth2PasswordRequestForm is a Pydantic model provided by FastAPI 
+    #specifically designed for handling OAuth2 password grant type requests.
+    db: Session = Depends(get_db)
+):
+    return users.login_user(db, user=user)
 
 #LISTS  
 #Get all lists
 #Define a GET endpoint (/lists) to retrieve a list of items from the database. It 
 #uses the get_lists function from the lists file.
 @app.get("/lists", response_model=List[schemas.List])
-def read_lists(token: Annotated[str, Depends(oauth2_scheme)], skip: int = 0, limit: int = 20, db: Session = Depends(get_db)):
+def read_lists(token: Annotated[str, Depends(reuseable_oauth)], skip: int = 0, limit: int = 20, db: Session = Depends(get_db)):
     db = database.SessionLocal()
     results = lists.get_lists(db, skip=skip, limit=limit)
     if results is None:
