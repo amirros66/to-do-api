@@ -34,8 +34,8 @@ def get_lists(db: Session, skip: int = 0, limit: int = 20):
 
 #Create list:
 #This function adds a new list to the db.
-def create_list(db: Session, list: schemas.ListCreate):
-    db_list = models.List(**list.dict()) #Creates a new instance
+def create_list(db: Session, user_id: int, list: schemas.ListCreate):
+    db_list = models.List(**list.dict(), owner_id=user_id) #Creates a new instance
     #of the 'list' model using data provided in the 'list'
     #parameter. **list.dict() syntax is used to convert the Pydantic 
     #model to a dictionary and then unpack it.

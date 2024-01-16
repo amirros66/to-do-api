@@ -6,7 +6,9 @@ from jose import jwt
 from pydantic import ValidationError
 from app import database, models
 from app.schemas import TokenPayload, UserBase
-from app.credentials import ALGORITHM, JWT_SECRET_KEY
+from app.auth import ALGORITHM, JWT_SECRET_KEY
+#changed the above from this from app.credentials import ALGORITHM, JWT_SECRET_KEY
+
 
 # This dependency will make sure get_current_user below will
 # always receive the `token` as a string.

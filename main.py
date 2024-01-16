@@ -12,6 +12,9 @@ from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordBearer
 #Import modules from local 'app' package.
 from app import lists, models, database, schemas, tasks, users
+from app.deps import get_current_user, UserBase
+#Had to add above line to define get_current_user + UserBase on line 120
+
 
 from dotenv import load_dotenv
 
@@ -112,8 +115,12 @@ def read_lists(token: Annotated[str, Depends(reuseable_oauth)], skip: int = 0, l
 
 #Create list
 @app.post("/lists", response_model=schemas.List)
-def create_list(list: schemas.ListCreate, db: Session = Depends(get_db)):
-    return lists.create_list(db, list=list)
+def create_list(
+    list: schemas.ListCreate, 
+    user: UserBase = Depends(get_current_user), 
+    db: Session = Depends(get_db)
+    ):
+    return lists.create_list(db, user_id=user.id, list=list)
 
 
 #Delete list

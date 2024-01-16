@@ -27,6 +27,10 @@ class Token(BaseModel):
     access_token: str
     token_type: str
 
+class TokenPayload(BaseModel):
+    exp: int
+    sub: str
+
 #Tasks
 class TaskBase(BaseModel):
     id: int
@@ -56,6 +60,7 @@ class ListCreate(BaseModel):
 
 class List(ListBase):
     tasks: list[Task] = []
+    owner: User               # add the owner
 
     class Config:
-        orm_mode = True
+        from_attributes = True
