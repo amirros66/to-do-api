@@ -102,10 +102,21 @@ def login_with_form_data(
 #Get all lists
 #Define a GET endpoint (/lists) to retrieve a list of items from the database. It 
 #uses the get_lists function from the lists file.
+# @app.get("/lists", response_model=List[schemas.List])
+# def read_lists(token: Annotated[str, Depends(reuseable_oauth)], skip: int = 0, limit: int = 20, db: Session = Depends(get_db)):
+#     db = database.SessionLocal()
+#     results = lists.get_lists(db, skip=skip, limit=limit)
+#     if results is None:
+#         raise HTTPException(status_code=404, detail="No lists found")
+#     return results
+
+#Access Control. Control their access to only their own lists.
 @app.get("/lists", response_model=List[schemas.List])
-def read_lists(token: Annotated[str, Depends(reuseable_oauth)], skip: int = 0, limit: int = 20, db: Session = Depends(get_db)):
-    db = database.SessionLocal()
-    results = lists.get_lists(db, skip=skip, limit=limit)
+def read_lists(
+        skip: int = 0, limit: int = 20,
+        user: UserBase = Depends(get_current_user), # inject the current_user
+        db: Session = Depends(get_db)):
+    results = lists.get_lists(db, user_id=user.id, skip=skip, limit=limit) # pass in the user_id
     if results is None:
         raise HTTPException(status_code=404, detail="No lists found")
     return results

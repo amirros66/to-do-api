@@ -62,8 +62,10 @@ def create_list(db: Session, user_id: int, list: schemas.ListCreate):
 
 #Delete list
 #This function deletes a list from the database based on its ID.
-def delete_list(db: Session, list_id: int):
-    list = db.query(models.List).filter(models.List.id == list_id).first()
+def delete_list(db: Session, user_id: int,list_id: int):
+    list = db.query(models.List).filter(models.List.id == list_id).filter(
+        models.List.owner_id == user_id).first()
+    # list = db.query(models.List).filter(models.List.id == list_id).first()
     #Query the database to retrieve the list with the specified ID.
     #Line by line - db.query(models.List) initiates a query on the List model 
     #(representing a database table) within the current database session.
@@ -82,8 +84,10 @@ def delete_list(db: Session, list_id: int):
 
 #Get one list
 #This function retrieves a specific list from the database based on its ID.
-def get_list(db: Session, list_id: int):
-    list = db.query(models.List).filter(models.List.id == list_id).first()
+def get_list(db: Session, user_id: int, list_id: int):
+    # list = db.query(models.List).filter(models.List.id == list_id).first()
+    list = db.query(models.List).filter(models.List.id == list_id).filter(
+        models.List.owner_id == user_id).first()
     #Query the database to retrieve the list with the specified ID.
     print(list)
     #Print list to console for debugging purposes.
@@ -92,12 +96,24 @@ def get_list(db: Session, list_id: int):
 
 #Get list by name
 #This function retrieves a specific list from the database based on its name.
-def get_list_by_name(db: Session, name: str):
-    list = db.query(models.List).filter(models.List.name == name).first()
+def get_list_by_name(db: Session, user_id:int, name: str):
+    # list = db.query(models.List).filter(models.List.name == name).first()
+    list = db.query(models.List).filter(models.List.name == name).filter(
+        models.List.owner_id == user_id).first()
     #Query the database to retrieve the list with the specified name.
     print(list)
     return list
+  
+
+#Access control, get user's list
+def get_lists(db: Session, user_id: int, skip: int = 0, limit: int = 20): # add the user_id arg
+    lists = db.query(models.List).filter( # and filter the results accordingly
+        models.List.owner_id == user_id).offset(skip).limit(limit).all()
+    print(lists)
+    return lists
 
 #The above code defines several that interact with a database using SQLAlchemy.
 #Session class is used for managing the database sessions, and models and schemas
 #contain the data models and pydantic schemas used in these database operations.
+
+
